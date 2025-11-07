@@ -1,3 +1,22 @@
-fn main() {
-    println!("Hello, world!");
+use crate::routes::create_router;
+use std::net::SocketAddr;
+use tokio::net::TcpListener;
+
+mod config;
+mod routes;
+mod telemetry;
+
+#[tokio::main]
+async fn main() {
+    telemetry::init_tracing();
+    let cfg = config::AppConfig::from_env();
+    let app = create_router();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], cfg.port.parse().unwrap()));
+    let listener = TcpListener::bind(addr)
+        .await
+        .expect("Failed to bind to address");
+    tracing::info!("Running on port {}", cfg.port);
+
+    axum::serve(listener, app).await.expect("Server error");
 }
