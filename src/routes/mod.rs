@@ -1,8 +1,13 @@
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 
 mod health;
-pub use health::health;
+mod shorten;
 
 pub fn create_router() -> Router {
-    Router::new().route("/health", get(health))
+    Router::new()
+        .route("/api/health", get(health::health))
+        .route("/api/shorten", post(shorten::shorten))
 }
