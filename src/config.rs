@@ -3,6 +3,7 @@ use std::env;
 pub struct AppConfig {
     // each value owns its heap data
     pub port: String,
+    pub db_url: String,
 }
 
 impl AppConfig {
@@ -17,7 +18,9 @@ impl AppConfig {
             );
         // above is more efficient that unwrap_or("8080") because the closure form only runs on error
 
-        // same as AppConfig { port }
-        Self { port }
+        let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not present in .env file");
+
+        // same as AppConfig { port, db_url }
+        Self { port, db_url }
     }
 }
