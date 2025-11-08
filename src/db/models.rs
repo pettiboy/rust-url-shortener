@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Default)]
 pub struct Link {
     // db auto sets this field
-    pub id: Uuid,
-    pub created_at: DateTime<Utc>,
+    pub id: Option<Uuid>,
+    pub created_at: Option<DateTime<Utc>>,
 
     // required fields
     pub slug: String,

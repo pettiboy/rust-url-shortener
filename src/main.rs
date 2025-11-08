@@ -6,6 +6,7 @@ mod config;
 mod db;
 mod routes;
 mod telemetry;
+mod utils;
 
 #[tokio::main]
 async fn main() {

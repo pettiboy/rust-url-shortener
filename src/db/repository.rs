@@ -9,14 +9,15 @@ impl LinkRepository {
         let record = sqlx::query_as!(
             Link,
             r#"
-            INSERT INTO links (slug, target, expires_at, metadata)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO links (slug, target, clicks, metadata, expires_at)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING id, created_at, slug, target, clicks, metadata, expires_at
             "#,
             link.slug,
             link.target,
+            link.clicks,
+            link.metadata,
             link.expires_at,
-            link.metadata
         )
         .fetch_one(pool)
         .await?;
