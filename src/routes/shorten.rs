@@ -15,7 +15,7 @@ pub struct ShortenRequest {
 
 #[derive(Serialize)]
 pub struct ShortenResponse {
-    id: String,
+    link: Link,
 }
 
 pub async fn shorten(
@@ -38,7 +38,7 @@ pub async fn shorten(
 
     // insert your application logic here
     let res = ShortenResponse {
-        id: link.unwrap().id.unwrap().to_string(),
+        link: link.unwrap(),
     };
 
     // this will be converted into a JSON response

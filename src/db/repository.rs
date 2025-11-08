@@ -24,4 +24,16 @@ impl LinkRepository {
 
         Ok(record)
     }
+
+    pub async fn get_by_slug(pool: &PgPool, slug: &str) -> Result<Link, sqlx::Error> {
+        let record = sqlx::query_as!(
+            Link,
+            r#"SELECT id, created_at, slug, target, clicks, metadata, expires_at FROM links WHERE slug = $1"#,
+            slug,
+        )
+            .fetch_one(pool)
+            .await?;
+
+        Ok(record)
+    }
 }
