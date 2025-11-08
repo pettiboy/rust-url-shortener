@@ -2,9 +2,68 @@
 
 A very fast, self-hostable and reliable URL shortener in rust
 
-## Quick Start with Docker
+## Quick Start with Docker (Production)
 
-1. **Create a `.env` file** in the project root:
+For end users who want to quickly deploy the application using the pre-built image:
+
+1. **Download the production docker-compose file**:
+
+```bash
+curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/docker-compose.prod.yml
+mv docker-compose.prod.yml docker-compose.yml
+```
+
+Or manually copy the contents of `docker-compose.prod.yml` from this repository.
+
+2. **Download the migrations folder**:
+
+```bash
+# Clone only the migrations folder
+git clone --depth 1 --filter=blob:none --sparse https://github.com/pettiboy/rust-url-shortener.git
+cd rust-url-shortener
+git sparse-checkout set migrations
+mv migrations ..
+cd ..
+rm -rf rust-url-shortener
+```
+
+3. **Create a `.env` file** in the same directory:
+
+```env
+# PostgreSQL Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=rust_url_shortener
+POSTGRES_PORT=5433
+
+# Application Configuration
+APP_PORT=8080
+```
+
+4. **Start the services**:
+
+```bash
+docker compose up -d
+```
+
+5. **Check the logs**:
+
+```bash
+docker compose logs -f app
+```
+
+## Development Setup
+
+For developers who want to build and modify the application locally:
+
+1. **Clone the repository**:
+
+```bash
+git clone https://github.com/pettiboy/rust-url-shortener.git
+cd rust-url-shortener
+```
+
+2. **Create a `.env` file** in the project root:
 
 ```env
 # PostgreSQL Configuration
@@ -20,13 +79,13 @@ APP_PORT=8080
 DATABASE_URL=postgres://postgres:postgres@localhost:5433/rust_url_shortener
 ```
 
-2. **Start the services**:
+3. **Start the services** (this will build the image locally):
 
 ```bash
 docker compose up -d --build
 ```
 
-3. **Check the logs**:
+4. **Check the logs**:
 
 ```bash
 docker compose logs -f app
