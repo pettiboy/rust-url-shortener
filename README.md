@@ -15,19 +15,7 @@ mv docker-compose.prod.yml docker-compose.yml
 
 Or manually copy the contents of `docker-compose.prod.yml` from this repository.
 
-2. **Download the migrations folder**:
-
-```bash
-# Clone only the migrations folder
-git clone --depth 1 --filter=blob:none --sparse https://github.com/pettiboy/rust-url-shortener.git
-cd rust-url-shortener
-git sparse-checkout set migrations
-mv migrations ..
-cd ..
-rm -rf rust-url-shortener
-```
-
-3. **Create a `.env` file** in the same directory:
+2. **Create a `.env` file** in the same directory:
 
 ```env
 # PostgreSQL Configuration
@@ -38,15 +26,18 @@ POSTGRES_PORT=5433
 
 # Application Configuration
 APP_PORT=8080
+
+# Migration Configuration
+RUN_MIGRATIONS=true
 ```
 
-4. **Start the services**:
+3. **Start the services**:
 
 ```bash
 docker compose up -d
 ```
 
-5. **Check the logs**:
+4. **Check the logs**:
 
 ```bash
 docker compose logs -f app
@@ -77,6 +68,9 @@ APP_PORT=8080
 
 # Database URL (for local development)
 DATABASE_URL=postgres://postgres:postgres@localhost:5433/rust_url_shortener
+
+# Migration Configuration
+RUN_MIGRATIONS=true
 ```
 
 3. **Start the services** (this will build the image locally):
@@ -161,13 +155,15 @@ cargo run
 
 OR for live reload
 
+Set `RUN_MIGRATIONS` to false before using live reload
+
 ```bash
 watchexec -e rs -r cargo run
 ```
 
 ### Database Migrations
 
-Migrations are stored in the `migrations/` directory and are automatically applied when using Docker Compose.
+Migrations are stored in the `migrations/` directory and are bundled with the Docker image. They are automatically applied on application startup when the `RUN_MIGRATIONS` environment variable is set to `true`.
 
 To create a new migration:
 

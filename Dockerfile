@@ -43,6 +43,9 @@ WORKDIR /app
 # Copy the binary from builder
 COPY --from=builder /app/target/release/rust-url-shortener /app/rust-url-shortener
 
+# Copy migrations from builder (bundled in the image)
+COPY --from=builder /app/migrations /app/migrations
+
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
 

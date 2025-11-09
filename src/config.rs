@@ -4,6 +4,7 @@ pub struct AppConfig {
     // each value owns its heap data
     pub port: String,
     pub db_url: String,
+    pub run_migrations: bool,
 }
 
 impl AppConfig {
@@ -20,7 +21,15 @@ impl AppConfig {
 
         let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not present in .env file");
 
-        // same as AppConfig { port, db_url }
-        Self { port, db_url }
+        let run_migrations = env::var("RUN_MIGRATIONS")
+            .unwrap_or_else(|_| "true".to_string())
+            .parse()
+            .unwrap_or(true);
+
+        Self {
+            port,
+            db_url,
+            run_migrations,
+        }
     }
 }

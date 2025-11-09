@@ -16,29 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  migrate:
-    image: postgres:16-alpine
-    container_name: rust_url_shortener_migrate
-    environment:
-      PGHOST: postgres
-      PGPORT: 5432
-      PGDATABASE: ${POSTGRES_DB}
-      PGUSER: ${POSTGRES_USER}
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ./migrations:/migrations:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: >
-      sh -c "
-      for file in /migrations/*.sql; do
-        echo \"Running migration: $$file\";
-        psql -f $$file || exit 1;
-      done
-      "
-    restart: on-failure
-
   app:
     build:
       context: .
@@ -48,12 +25,10 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       PORT: ${APP_PORT:-8080}
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
     depends_on:
       postgres:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:

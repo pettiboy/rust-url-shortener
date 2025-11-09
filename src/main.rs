@@ -17,6 +17,15 @@ async fn main() {
     let cfg = config::AppConfig::from_env();
     let db_pool = db::get_db_pool(&cfg.db_url).await;
 
+    if cfg.run_migrations {
+        tracing::info!("Running database migrations...");
+        sqlx::migrate!("./migrations")
+            .run(&db_pool)
+            .await
+            .expect("Failed to run migrations");
+        tracing::info!("Migrations completed successfully");
+    }
+
     let app = create_router(db_pool);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], cfg.port.parse().unwrap()));
