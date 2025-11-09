@@ -27,9 +27,12 @@ fi
 # Prompt for domain name
 echo ""
 echo "🌐 Domain Configuration"
-if [ -z "$DOMAIN" ]; then
+while [ -z "$DOMAIN" ]; do
   read -p "Enter your domain name (e.g., example.com): " DOMAIN
-fi
+  if [ -z "$DOMAIN" ]; then
+    echo "⚠️  Domain name cannot be empty. Please try again."
+  fi
+done
 
 # Prompt for Caddy ports
 if [ -z "$CADDY_HTTP_PORT" ]; then
