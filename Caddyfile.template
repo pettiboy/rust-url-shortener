@@ -1,0 +1,10 @@
+{DOMAIN} {
+	# Reverse proxy to the app service
+	# APP_PORT is the port on which the Rust application runs inside the container
+	reverse_proxy app:{APP_PORT}
+
+	# Automatic HTTPS via Let's Encrypt
+	# Caddy will automatically obtain and renew certificates
+	# HTTP to HTTPS redirect is handled automatically
+}
+

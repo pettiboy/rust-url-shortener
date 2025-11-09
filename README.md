@@ -14,7 +14,14 @@ This automated setup will:
 
 - Download `docker-compose.yml`
 - Create `.env` with a secure random password
+- Prompt for your domain name and configure Caddy
+- Generate Caddyfile with automatic SSL/TLS support
 - Configure all necessary settings
+
+**Before starting, make sure:**
+
+- Your domain's A record points to your server's IP address
+- Ports 80 and 443 are accessible (required for Let's Encrypt)
 
 Then start the service:
 
@@ -42,15 +49,34 @@ curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/.env.
 mv .env.example .env
 ```
 
-2. **Edit `.env` and change `POSTGRES_PASSWORD` to a secure value**
+2. **Edit `.env` and:**
 
-3. **Start the services**:
+   - Change `POSTGRES_PASSWORD` to a secure value
+   - Set `DOMAIN` to your domain name
+   - Configure `CADDY_HTTP_PORT` and `CADDY_HTTPS_PORT` if needed (defaults: 80, 443)
+
+3. **Download and generate Caddyfile:**
+
+```bash
+curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/Caddyfile.template
+# Read APP_PORT from .env (defaults to 8080)
+APP_PORT=$(grep "^APP_PORT=" .env 2>/dev/null | cut -d '=' -f2 || echo "8080")
+# Replace {DOMAIN}, {HTTP_PORT}, {HTTPS_PORT}, {APP_PORT} with your values
+sed -e "s/{DOMAIN}/your-domain.com/g" \
+    -e "s/{HTTP_PORT}/80/g" \
+    -e "s/{HTTPS_PORT}/443/g" \
+    -e "s/{APP_PORT}/${APP_PORT:-8080}/g" \
+    Caddyfile.template > Caddyfile
+rm Caddyfile.template
+```
+
+4. **Start the services**:
 
 ```bash
 docker compose up -d
 ```
 
-4. **Check the logs**:
+5. **Check the logs**:
 
 ```bash
 docker compose logs -f app
@@ -102,9 +128,11 @@ docker compose logs -f app
 
 4. **Test the API**:
 
+The application is accessible through Caddy at `http://localhost` (port 80):
+
 ```bash
 # Shorten a URL
-curl -X POST http://localhost:8080/api/shorten \
+curl -X POST http://localhost/api/shorten \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
@@ -112,8 +140,10 @@ curl -X POST http://localhost:8080/api/shorten \
 # {"link":{"id":"...","slug":"abc123","target":"https://example.com",...}}
 
 # Visit the shortened URL
-curl -L http://localhost:8080/abc123
+curl -L http://localhost/abc123
 ```
+
+**Note:** For local development, the app uses a simple Caddyfile with `localhost` (no SSL). The app is only accessible through Caddy, not directly on port 8080.
 
 ## API Endpoints
 
@@ -185,3 +215,33 @@ To create a new migration:
 ```bash
 sqlx migrate add <migration_name>
 ```
+
+### Custom Domain & SSL/TLS
+
+This application uses **Caddy** as a reverse proxy, which provides:
+
+- **Automatic HTTPS**: Caddy automatically obtains and renews SSL/TLS certificates from Let's Encrypt
+- **Custom Domain Support**: Configure your domain in the `.env` file
+- **Zero-config SSL**: No manual certificate management required
+
+**Port Configuration:**
+
+- `APP_PORT`: The port on which the Rust application runs inside the container (default: 8080)
+- Caddy automatically forwards requests to `app:APP_PORT`
+- You can customize this port in your `.env` file if needed
+- The setup script automatically reads `APP_PORT` from `.env` and configures Caddy accordingly
+
+**Production Setup:**
+
+- The setup script will prompt for your domain name
+- Make sure your domain's A record points to your server's IP
+- Ports 80 and 443 must be accessible for Let's Encrypt to work
+- Caddy will automatically handle HTTP to HTTPS redirects
+- The generated Caddyfile uses the `APP_PORT` value from your `.env` file
+
+**Local Development:**
+
+- Uses a simple `Caddyfile` with `localhost` (no SSL)
+- Access the app at `http://localhost`
+- No domain configuration needed for local development
+- The local `Caddyfile` proxies to `app:8080` by default
