@@ -4,32 +4,45 @@ A very fast, self-hostable and reliable URL shortener in rust
 
 ## Quick Start with Docker (Production)
 
-For end users who want to quickly deploy the application using the pre-built image:
+**One command to set everything up:**
 
-1. **Download the production docker-compose file**:
+```bash
+curl -sSL https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/scripts/setup.sh | bash
+```
+
+This automated setup will:
+
+- Download `docker-compose.yml`
+- Create `.env` with a secure random password
+- Configure all necessary settings
+
+Then start the service:
+
+```bash
+docker compose up -d
+```
+
+Check the logs:
+
+```bash
+docker compose logs -f app
+```
+
+---
+
+<details>
+<summary>Manual Setup (if you prefer)</summary>
+
+1. **Download the required files**:
 
 ```bash
 curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/docker-compose.prod.yml
 mv docker-compose.prod.yml docker-compose.yml
+curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/.env.example
+mv .env.example .env
 ```
 
-Or manually copy the contents of `docker-compose.prod.yml` from this repository.
-
-2. **Create a `.env` file** in the same directory:
-
-```env
-# PostgreSQL Configuration
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=rust_url_shortener
-POSTGRES_PORT=5433
-
-# Application Configuration
-APP_PORT=8080
-
-# Migration Configuration
-RUN_MIGRATIONS=true
-```
+2. **Edit `.env` and change `POSTGRES_PASSWORD` to a secure value**
 
 3. **Start the services**:
 
@@ -42,6 +55,8 @@ docker compose up -d
 ```bash
 docker compose logs -f app
 ```
+
+</details>
 
 ## Development Setup
 
