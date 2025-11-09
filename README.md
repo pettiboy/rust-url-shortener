@@ -15,20 +15,20 @@ This automated setup will:
 
 - Download `docker-compose.yml`
 - Create `.env` with a secure random password
-- Prompt for your domain name and configure Caddy
-- Generate Caddyfile with automatic SSL/TLS support
-- Configure all necessary settings
+- Prompt you to choose between using Caddy (automatic SSL) or handling your own reverse proxy
+- Configure all necessary settings based on your choice
 
-**Before starting, make sure:**
+**Deployment Modes:**
 
-- Your domain's A record points to your server's IP address
-- Ports 80 and 443 are accessible (required for Let's Encrypt)
+1. **With Caddy (Recommended)**: Automatic SSL/TLS, domain configuration, zero-config HTTPS
 
-Then start the service:
+   - Before starting, make sure your domain's A record points to your server's IP address
+   - Ports 80 and 443 must be accessible (required for Let's Encrypt)
+   - Start with: `docker compose --profile caddy up -d`
 
-```bash
-docker compose up -d
-```
+2. **Custom Proxy**: App exposed on a configurable port for your own reverse proxy (nginx, traefik, etc.)
+   - You handle SSL/TLS and domain routing yourself
+   - Start with: `docker compose up -d`
 
 Check the logs:
 
@@ -54,7 +54,6 @@ mv .env.example .env
 
    - Change `POSTGRES_PASSWORD` to a secure value
    - Set `DOMAIN` to your domain name
-   - Configure `CADDY_HTTP_PORT` and `CADDY_HTTPS_PORT` if needed (defaults: 80, 443)
 
 3. **Download and generate Caddyfile:**
 
@@ -62,10 +61,8 @@ mv .env.example .env
 curl -O https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/Caddyfile.template
 # Read APP_PORT from .env (defaults to 8080)
 APP_PORT=$(grep "^APP_PORT=" .env 2>/dev/null | cut -d '=' -f2 || echo "8080")
-# Replace {DOMAIN}, {HTTP_PORT}, {HTTPS_PORT}, {APP_PORT} with your values
+# Replace {DOMAIN} and {APP_PORT} with your values
 sed -e "s/{DOMAIN}/your-domain.com/g" \
-    -e "s/{HTTP_PORT}/80/g" \
-    -e "s/{HTTPS_PORT}/443/g" \
     -e "s/{APP_PORT}/${APP_PORT:-8080}/g" \
     Caddyfile.template > Caddyfile
 rm Caddyfile.template
@@ -73,9 +70,8 @@ rm Caddyfile.template
 
 4. **Start the services**:
 
-```bash
-docker compose up -d
-```
+   - If using Caddy: `docker compose --profile caddy up -d`
+   - If using custom proxy: `docker compose up -d`
 
 5. **Check the logs**:
 
@@ -217,28 +213,46 @@ To create a new migration:
 sqlx migrate add <migration_name>
 ```
 
-### Custom Domain & SSL/TLS
+### Deployment Modes
 
-This application uses **Caddy** as a reverse proxy, which provides:
+This application supports two deployment modes:
+
+#### With Caddy (Automatic SSL/TLS)
+
+**Caddy** is an optional reverse proxy that provides:
 
 - **Automatic HTTPS**: Caddy automatically obtains and renews SSL/TLS certificates from Let's Encrypt
 - **Custom Domain Support**: Configure your domain in the `.env` file
 - **Zero-config SSL**: No manual certificate management required
+
+**Setup:**
+
+- The setup script will prompt for your domain name when you choose Caddy
+- Make sure your domain's A record points to your server's IP
+- Ports 80 and 443 must be accessible for Let's Encrypt to work
+- Caddy will automatically handle HTTP to HTTPS redirects
+- Start services with: `docker compose --profile caddy up -d`
 
 **Port Configuration:**
 
 - `APP_PORT`: The port on which the Rust application runs inside the container (default: 8080)
 - Caddy automatically forwards requests to `app:APP_PORT`
 - You can customize this port in your `.env` file if needed
-- The setup script automatically reads `APP_PORT` from `.env` and configures Caddy accordingly
 
-**Production Setup:**
+#### Custom Proxy (Self-Managed)
 
-- The setup script will prompt for your domain name
-- Make sure your domain's A record points to your server's IP
-- Ports 80 and 443 must be accessible for Let's Encrypt to work
-- Caddy will automatically handle HTTP to HTTPS redirects
-- The generated Caddyfile uses the `APP_PORT` value from your `.env` file
+If you prefer to handle reverse proxy yourself (nginx, traefik, Cloudflare Tunnel, etc.):
+
+- The app will be exposed directly on a configurable port (default: 8080)
+- You configure `EXPOSED_APP_PORT` in `.env` to set the host port
+- You handle SSL/TLS termination and domain routing in your own proxy
+- Start services with: `docker compose up -d` (Caddy service is disabled via profiles)
+
+**Port Configuration:**
+
+- `APP_PORT`: The port on which the Rust application runs inside the container (default: 8080)
+- `EXPOSED_APP_PORT`: The port exposed on the host for your reverse proxy (default: 8080)
+- Your reverse proxy should forward requests to `localhost:EXPOSED_APP_PORT`
 
 **Local Development:**
 
