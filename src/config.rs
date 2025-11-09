@@ -1,10 +1,12 @@
 use std::env;
 
+#[derive(Clone)]
 pub struct AppConfig {
     // each value owns its heap data
     pub port: String,
     pub db_url: String,
     pub run_migrations: bool,
+    pub api_key: String,
 }
 
 impl AppConfig {
@@ -26,10 +28,13 @@ impl AppConfig {
             .parse()
             .unwrap_or(true);
 
+        let api_key = env::var("API_KEY").expect("API_KEY not present in .env file");
+
         Self {
             port,
             db_url,
             run_migrations,
+            api_key,
         }
     }
 }

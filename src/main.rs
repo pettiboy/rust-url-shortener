@@ -1,9 +1,10 @@
-use crate::routes::create_router;
+use crate::routes::{create_router, AppState};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
 mod config;
 mod db;
+mod middleware;
 mod routes;
 mod telemetry;
 mod utils;
@@ -26,7 +27,10 @@ async fn main() {
         tracing::info!("Migrations completed successfully");
     }
 
-    let app = create_router(db_pool);
+    let app = create_router(&AppState {
+        db_pool,
+        cfg: cfg.clone(),
+    });
 
     let addr = SocketAddr::from(([0, 0, 0, 0], cfg.port.parse().unwrap()));
     let listener = TcpListener::bind(addr)

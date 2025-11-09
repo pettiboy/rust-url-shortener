@@ -15,13 +15,18 @@ curl -sSL https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/.en
 # Generate a random password
 RANDOM_PASSWORD=$(openssl rand -base64 16 | tr -d '/+=' | cut -c1-16)
 
-# Update the password in .env file
+# Generate a random API secret
+RANDOM_API_KEY=$(openssl rand -base64 32 | tr -d '/+=' | cut -c1-32)
+
+# Update the password and API secret in .env file
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
   sed -i '' "s/CHANGE_THIS_PASSWORD/$RANDOM_PASSWORD/g" .env
+  sed -i '' "s/CHANGE_THIS_API_KEY/$RANDOM_API_KEY/g" .env
 else
   # Linux
   sed -i "s/CHANGE_THIS_PASSWORD/$RANDOM_PASSWORD/g" .env
+  sed -i "s/CHANGE_THIS_API_KEY/$RANDOM_API_KEY/g" .env
 fi
 
 # Check if we can prompt interactively (stdin is a terminal)
@@ -115,6 +120,9 @@ fi
 
 echo ""
 echo "✅ Setup complete!"
+echo ""
+echo "🔑 Generated API Secret: $RANDOM_API_KEY"
+echo "   (saved to .env file)"
 echo ""
 
 if [[ "$USE_CADDY" == "true" ]]; then

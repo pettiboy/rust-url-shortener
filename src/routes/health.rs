@@ -1,6 +1,7 @@
 use axum::{extract::State, response::IntoResponse, Json};
 use serde::Serialize;
-use sqlx::PgPool;
+
+use crate::routes::AppState;
 
 #[derive(Serialize)]
 struct HealthResponse {
@@ -8,8 +9,8 @@ struct HealthResponse {
     database: bool,
 }
 
-pub async fn health(State(pool): State<PgPool>) -> impl IntoResponse {
-    let database = pool.acquire().await.is_ok();
+pub async fn health(State(state): State<AppState>) -> impl IntoResponse {
+    let database = state.db_pool.acquire().await.is_ok();
 
     Json(HealthResponse {
         status: true,

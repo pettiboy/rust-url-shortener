@@ -1,9 +1,9 @@
 use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 
 use crate::{
     db::{Link, LinkRepository},
+    routes::AppState,
     utils::slug::generate_slug,
 };
 
@@ -19,7 +19,7 @@ pub struct ShortenResponse {
 }
 
 pub async fn shorten(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     // this argument tells axum to parse the request body
     // as JSON into a `ShortenRequest` type
     Json(payload): Json<ShortenRequest>,
@@ -34,7 +34,7 @@ pub async fn shorten(
         ..Default::default()
     };
 
-    let link = LinkRepository::create(&pool, &link).await;
+    let link = LinkRepository::create(&state.db_pool, &link).await;
 
     // insert your application logic here
     let res = ShortenResponse {
