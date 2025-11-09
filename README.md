@@ -7,7 +7,8 @@ A very fast, self-hostable and reliable URL shortener in rust
 **One command to set everything up:**
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/scripts/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/scripts/setup.sh -o setup.sh
+bash setup.sh
 ```
 
 This automated setup will:

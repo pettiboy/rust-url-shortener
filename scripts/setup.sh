@@ -27,6 +27,21 @@ fi
 # Prompt for domain name
 echo ""
 echo "🌐 Domain Configuration"
+
+# Check if we can prompt interactively (stdin is a terminal)
+if [ ! -t 0 ]; then
+  echo "❌ Error: Cannot prompt for input when script is piped."
+  echo ""
+  echo "Please download the script first, then run it:"
+  echo "  curl -sSL https://raw.githubusercontent.com/pettiboy/rust-url-shortener/main/scripts/setup.sh -o setup.sh"
+  echo "  bash setup.sh"
+  echo ""
+  echo "Or set DOMAIN as environment variable:"
+  echo "  DOMAIN=example.com curl -sSL ... | bash"
+  exit 1
+fi
+
+# Always prompt for domain (never read from .env)
 while [ -z "$DOMAIN" ]; do
   read -p "Enter your domain name (e.g., example.com): " DOMAIN
   if [ -z "$DOMAIN" ]; then
@@ -35,15 +50,11 @@ while [ -z "$DOMAIN" ]; do
 done
 
 # Prompt for Caddy ports
-if [ -z "$CADDY_HTTP_PORT" ]; then
-  read -p "Enter HTTP port for Caddy [default: 80]: " CADDY_HTTP_PORT
-  CADDY_HTTP_PORT=${CADDY_HTTP_PORT:-80}
-fi
+read -p "Enter HTTP port for Caddy [default: 80]: " CADDY_HTTP_PORT
+CADDY_HTTP_PORT=${CADDY_HTTP_PORT:-80}
 
-if [ -z "$CADDY_HTTPS_PORT" ]; then
-  read -p "Enter HTTPS port for Caddy [default: 443]: " CADDY_HTTPS_PORT
-  CADDY_HTTPS_PORT=${CADDY_HTTPS_PORT:-443}
-fi
+read -p "Enter HTTPS port for Caddy [default: 443]: " CADDY_HTTPS_PORT
+CADDY_HTTPS_PORT=${CADDY_HTTPS_PORT:-443}
 
 # Update .env file with domain and ports
 if [[ "$OSTYPE" == "darwin"* ]]; then
